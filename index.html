@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Brasil ; Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --black:#0A0A0A; --white:#FFFFFF; --silver:#C8C8C8; --mid:#6B6B6B;
+    --surface:#111111; --card:#1A1A1A; --border:#2A2A2A;
+    --bmw:#1C69D3; --mini:#C7152A; --denza:#C5A44A;
+    --google:#4285F4; --meta:#1877F2;
+    --radius:4px;
+  }
+  html { scroll-behavior:smooth; }
+  body { background:var(--black); color:var(--white); font-family:'Inter',sans-serif; font-size:14px; line-height:1.6; min-height:100vh; }
+
+  /* HEADER */
+  .header { background:var(--black); border-bottom:1px solid var(--border); padding:16px 40px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; flex-wrap:wrap; gap:12px; }
+  .header-left { display:flex; align-items:center; gap:16px; }
+  .logo { font-family:'Montserrat',sans-serif; font-size:17px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+  .logo-div { width:1px; height:22px; background:var(--border); }
+  .logo-sub { font-size:11px; color:var(--mid); letter-spacing:0.08em; text-transform:uppercase; }
+  .header-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+  .sel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; color:var(--silver); font-family:'Inter',sans-serif; font-size:12px; cursor:pointer; outline:none; }
+  .sel option { background:var(--card); }
+  .partial-tag { display:inline-block; padding:3px 8px; background:rgba(197,164,74,0.15); border:1px solid rgba(197,164,74,0.3); border-radius:2px; font-size:10px; color:var(--denza); letter-spacing:0.05em; }
+
+  .loading-bar { position:fixed; top:0; left:0; height:2px; background:var(--denza); z-index:999; transition:width 0.3s; }
+
+  /* NAV */
+  .nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0 40px; display:flex; overflow-x:auto; }
+  .nav-btn { padding:13px 22px; background:none; border:none; color:var(--mid); font-family:'Inter',sans-serif; font-size:12px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; white-space:nowrap; }
+  .nav-btn:hover { color:var(--silver); }
+  .nav-btn.active { color:var(--white); border-bottom-color:var(--white); }
+  .nav-btn.bmw.active   { border-bottom-color:var(--bmw); }
+  .nav-btn.mini.active  { border-bottom-color:var(--mini); }
+  .nav-btn.denza.active { border-bottom-color:var(--denza); }
+
+  .view { display:none; }
+  .view.active { display:block; }
+
+  .page { padding:32px 40px; }
+  @media(max-width:768px) { .page{padding:20px;} .header{padding:14px 20px;} .nav{padding:0 20px;} }
+
+  .sec-title { font-family:'Montserrat',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--mid); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .sec-title::before { content:''; width:3px; height:13px; border-radius:1px; background:var(--white); display:inline-block; flex-shrink:0; }
+  .sec-title.bmw::before   { background:var(--bmw); }
+  .sec-title.mini::before  { background:var(--mini); }
+  .sec-title.denza::before { background:var(--denza); }
+  .mb { margin-bottom:32px; }
+
+  /* KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:10px; margin-bottom:32px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 16px; position:relative; overflow:hidden; }
+  .kpi::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--border); }
+  .kpi.w::after { background:var(--white); }
+  .kpi.b::after { background:var(--bmw); }
+  .kpi.m::after { background:var(--mini); }
+  .kpi.d::after { background:var(--denza); }
+  .kpi.g::after { background:var(--google); }
+  .kpi.mt::after { background:var(--meta); }
+  .kpi-label { font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--mid); margin-bottom:8px; }
+  .kpi-value { font-family:'Montserrat',sans-serif; font-size:26px; font-weight:700; line-height:1; margin-bottom:4px; }
+  .kpi-sub { font-size:10px; color:var(--mid); }
+
+  /* GRIDS */
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:32px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:32px; }
+  .grid-wide { display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-bottom:32px; }
+  @media(max-width:900px) { .grid2,.grid3,.grid-wide{grid-template-columns:1fr;} }
+
+  /* CARD */
+  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .card-header { padding:13px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .card-title { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver); }
+  .card-sub { font-size:10px; color:var(--mid); }
+  .card-body { padding:18px; }
+
+  /* BARS */
+  .bars { display:flex; flex-direction:column; gap:10px; }
+  .bar-item { display:flex; flex-direction:column; gap:4px; }
+  .bar-top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .bar-name { font-size:11px; color:var(--silver); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar-val  { font-family:'Montserrat',sans-serif; font-size:12px; font-weight:600; flex-shrink:0; }
+  .bar-pct  { font-size:10px; color:var(--mid); flex-shrink:0; }
+  .bar-track { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:3px; transition:width 0.6s ease; }
+
+  /* CPL MIDIA */
+  .cpl-midia { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cpl-block { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; position:relative; overflow:hidden; }
+  .cpl-block::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .cpl-block.google::before { background:var(--google); }
+  .cpl-block.meta::before   { background:var(--meta); }
+  .cpl-midia-label { font-size:9px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--mid); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .midia-icon { width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; flex-shrink:0; }
+  .midia-icon.g  { background:#fff; color:#333; }
+  .midia-icon.mt { background:linear-gradient(135deg,#405DE6,#833AB4,#FD1D1D); color:#fff; }
+  .cpl-midia-value { font-family:'Montserrat',sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
+  .cpl-midia-sub { font-size:10px; color:var(--mid); }
+
+  /* CHART */
+  .chart-wrap svg { width:100%; display:block; }
+  .chart-legend { display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--silver); }
+  .legend-line { width:16px; height:2px; flex-shrink:0; }
+
+  /* DONUT */
+  .donut-wrap { display:flex; align-items:center; gap:20px; }
+  .donut-legend { display:flex; flex-direction:column; gap:10px; flex:1; }
+  .dl-item { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--silver); }
+  .dl-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .dl-pct  { font-family:'Montserrat',sans-serif; font-weight:600; color:var(--white); margin-left:auto; }
+
+  /* TABLE */
+  .tbl { width:100%; border-collapse:collapse; font-size:12px; }
+  .tbl th { padding:10px 14px; font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--mid); background:var(--surface); border-bottom:1px solid var(--border); text-align:left; white-space:nowrap; }
+  .tbl td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--silver); }
+  .tbl tr:last-child td { border-bottom:none; }
+  .tbl tr:hover td { background:rgba(255,255,255,0.02); }
+  .tbl .total td { font-weight:700; color:var(--white); background:rgba(255,255,255,0.03); border-top:1px solid var(--border); }
+  .num { font-family:'Montserrat',sans-serif; font-weight:500; color:var(--white); }
+  .brand-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:6px; }
+  .type-tag { display:inline-block; padding:2px 6px; border-radius:2px; font-size:9px; font-weight:600; letter-spacing:0.06em; }
+  .type-tag.search { background:rgba(66,133,244,0.15); color:#7FB3FF; }
+  .type-tag.pmax   { background:rgba(52,168,83,0.15);  color:#6FCF97; }
+  .type-tag.leads  { background:rgba(24,119,242,0.15); color:#74A9FF; }
+  .type-tag.other  { background:rgba(255,255,255,0.06); color:var(--mid); }
+
+  /* BRAND BADGE */
+  .brand-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border-radius:2px; font-family:'Montserrat',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:20px; }
+  .brand-badge.bmw   { background:rgba(28,105,211,0.15); color:#5B9FFF; border:1px solid rgba(28,105,211,0.3); }
+  .brand-badge.mini  { background:rgba(199,21,42,0.15);  color:#FF6B7A; border:1px solid rgba(199,21,42,0.3); }
+  .brand-badge.denza { background:rgba(197,164,74,0.15); color:#E8C76B; border:1px solid rgba(197,164,74,0.3); }
+
+  /* LOADING */
+  .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 40px; gap:16px; }
+  .spinner { width:32px; height:32px; border:2px solid var(--border); border-top-color:var(--denza); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .loading-text { font-size:12px; color:var(--mid); }
+
+  /* FOOTER */
+  .footer { padding:32px 40px; border-top:1px solid var(--border); margin-top:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  .footer-note { font-size:11px; color:var(--mid); line-height:1.8; }
+  .footer-brand { font-family:'Montserrat',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--mid); }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="lbar" style="width:0%"></div>
+
+<header class="header">
+  <div class="header-left">
+    <span class="logo">Grand Brasil</span>
+    <div class="logo-div"></div>
+    <span class="logo-sub">Performance Dashboard</span>
+  </div>
+  <div class="header-right">
+    <select class="sel" id="mes-sel" onchange="applyFilters()"><option>Carregando...</option></select>
+    <span class="partial-tag" id="partial-tag" style="display:none">Parcial</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showView('geral',this)">Consolidado</button>
+  <button class="nav-btn bmw"   onclick="showView('bmw',  this)">BMW</button>
+  <button class="nav-btn mini"  onclick="showView('mini', this)">MINI</button>
+  <button class="nav-btn denza" onclick="showView('denza',this)">Denza</button>
+</nav>
+
+<!-- CONSOLIDADO -->
+<div id="view-geral" class="view active">
+  <div id="loading-geral" class="loading"><div class="spinner"></div><div class="loading-text">Carregando dados...</div></div>
+  <div id="content-geral" style="display:none">
+  <div class="page">
+    <div class="kpi-grid" id="kpi-geral"></div>
+
+    <!-- CPL POR MÍDIA CONSOLIDADO -->
+    <div class="sec-title mb">CPL por Mídia</div>
+    <div class="grid3" id="cpl-midia-geral"></div>
+
+    <div class="grid-wide">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Investimento por Marca — Evolução</span><span class="card-sub">Google + Meta · período selecionado</span></div>
+        <div class="card-body">
+          <div class="chart-wrap"><svg id="chart-linha" viewBox="0 0 560 160"></svg></div>
+          <div class="chart-legend" id="legend-linha"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Mix de Investimento</span></div>
+        <div class="card-body">
+          <div class="donut-wrap">
+            <svg id="donut-marca" viewBox="0 0 100 100" width="110" height="110" style="flex-shrink:0"></svg>
+            <div class="donut-legend" id="legend-donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Investimento por Mídia</span></div>
+        <div class="card-body"><div class="bars" id="bars-midia"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Leads CRM por Marca</span></div>
+        <div class="card-body"><div class="bars" id="bars-leads"></div></div>
+      </div>
+    </div>
+
+    <div class="sec-title mb">Resumo por Marca</div>
+    <div class="card mb">
+      <table class="tbl" id="tbl-consolidado">
+        <thead><tr><th>Marca</th><th>Mídia</th><th>Investimento</th><th>Leads CRM</th><th>CPL</th><th>Vendas</th><th>Custo / Venda</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- BMW -->
+<div id="view-bmw" class="view">
+  <div id="loading-bmw" class="loading"><div class="spinner"></div><div class="loading-text">Carregando...</div></div>
+  <div id="content-bmw" style="display:none">
+  <div class="page">
+    <div class="brand-badge bmw">● BMW</div>
+    <div class="kpi-grid" id="kpi-bmw"></div>
+    <div class="sec-title bmw mb">CPL por Mídia</div>
+    <div class="grid2" id="cpl-midia-bmw"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">% Investimento por Campanha — Google</span></div>
+        <div class="card-body"><div class="bars" id="bars-bmw-gcamp"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">% Investimento por Campanha — Meta</span></div>
+        <div class="card-body"><div class="bars" id="bars-bmw-mcamp"></div></div>
+      </div>
+    </div>
+    <div class="sec-title bmw mb">CRM — Detalhamento</div>
+    <div class="card mb"><table class="tbl" id="tbl-bmw"><thead><tr><th>Origem</th><th>Mídia</th><th>Leads</th><th>Vendas</th><th>Taxa de Conversão</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  </div>
+</div>
+
+<!-- MINI -->
+<div id="view-mini" class="view">
+  <div id="loading-mini" class="loading"><div class="spinner"></div><div class="loading-text">Carregando...</div></div>
+  <div id="content-mini" style="display:none">
+  <div class="page">
+    <div class="brand-badge mini">● MINI</div>
+    <div class="kpi-grid" id="kpi-mini"></div>
+    <div class="sec-title mini mb">CPL por Mídia</div>
+    <div class="grid2" id="cpl-midia-mini"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">% Investimento por Campanha — Google</span></div>
+        <div class="card-body"><div class="bars" id="bars-mini-gcamp"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">% Investimento por Campanha — Meta</span></div>
+        <div class="card-body"><div class="bars" id="bars-mini-mcamp"></div></div>
+      </div>
+    </div>
+    <div class="sec-title mini mb">CRM — Detalhamento</div>
+    <div class="card mb"><table class="tbl" id="tbl-mini"><thead><tr><th>Origem</th><th>Mídia</th><th>Leads</th><th>Vendas</th><th>Taxa de Conversão</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  </div>
+</div>
+
+<!-- DENZA -->
+<div id="view-denza" class="view">
+  <div id="loading-denza" class="loading"><div class="spinner"></div><div class="loading-text">Carregando...</div></div>
+  <div id="content-denza" style="display:none">
+  <div class="page">
+    <div class="brand-badge denza">● Denza</div>
+    <div class="kpi-grid" id="kpi-denza"></div>
+    <div class="sec-title denza mb">CPL por Mídia</div>
+    <div class="grid2" id="cpl-midia-denza"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">% Investimento por Campanha — Google</span></div>
+        <div class="card-body"><div class="bars" id="bars-denza-gcamp"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">% Investimento por Campanha — Meta</span></div>
+        <div class="card-body"><div class="bars" id="bars-denza-mcamp"></div></div>
+      </div>
+    </div>
+    <div class="sec-title denza mb">CRM — Detalhamento</div>
+    <div class="card mb"><table class="tbl" id="tbl-denza"><thead><tr><th>Origem</th><th>Mídia</th><th>Leads</th><th>Vendas</th><th>Taxa de Conversão</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p class="footer-note">Leads: registros no CRM · CPL: investimento total ÷ leads CRM · Dados via Google Sheets · CRM com granularidade mensal</p>
+  <div class="footer-brand">Grand Brasil · Performance</div>
+</footer>
+
+<script>
+const SHEET_ID = '10swc40b_tQPN3JSYZ7DPda2WdrBUMLEfVh6d0LvXOa4';
+const SHEETS   = ['Google_Denza','Google_BMW','Google_Mini','Meta_Denza','Meta_BMW','Meta_Mini','CRM_Denza','CRM_BMW','CRM_Mini'];
+const BRANDS   = ['Denza','BMW','Mini'];
+const BC = {Denza:'#C5A44A', BMW:'#1C69D3', Mini:'#C7152A'};
+const CLOSED = ['2026-03','2026-04','2026-05','2026-06'];
+
+let DATA = {};
+
+// ── FETCH ──
+async function fetchSheet(name) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+  const res  = await fetch(url);
+  const text = await res.text();
+  const json = JSON.parse(text.substring(47).slice(0,-2));
+  const cols = json.table.cols.map(c => c.label);
+  return (json.table.rows||[]).filter(r=>r&&r.c).map(r => {
+    const obj = {};
+    cols.forEach((c,i) => {
+      const cell = r.c[i];
+      if (!cell) { obj[c]=null; return; }
+      const v = cell.v;
+      if (typeof v==='string' && v.startsWith('Date(')) {
+        const m = v.match(/Date\((\d+),(\d+),(\d+)\)/);
+        if (m) {
+          const y=m[1], mo=String(parseInt(m[2])+1).padStart(2,'0'), dd=String(parseInt(m[3])).padStart(2,'0');
+          // Se a coluna é Mês, guarda só YYYY-MM; se é Data, guarda YYYY-MM-DD
+          if (c === 'Mês' || c === 'Mês (AAAA-MM)') {
+            obj[c] = y+'-'+mo;
+          } else {
+            obj[c] = y+'-'+mo+'-'+dd;
+            obj[c+'_mes'] = y+'-'+mo;
+          }
+        } else { obj[c]=v; }
+      } else { obj[c]=v; }
+    });
+    return obj;
+  });
+}
+
+// ── DATE UTILS ──
+function parseDate(v) {
+  if (!v) return null;
+  if (typeof v === 'string') {
+    // DD/MM/AAAA
+    const br = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (br) return new Date(br[3]+'-'+br[2]+'-'+br[1]);
+    // YYYY-MM-DD
+    if (v.match(/^\d{4}-\d{2}-\d{2}/)) return new Date(v.substring(0,10));
+    // YYYY-MM (sem dia)
+    if (v.match(/^\d{4}-\d{2}$/)) return new Date(v+'-01');
+  }
+  if (typeof v === 'number') return new Date(Math.round((v-25569)*86400*1000));
+  return null;
+}
+
+function parseMes(v) {
+  if (!v) return null;
+  if (typeof v === 'string') {
+    const br = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (br) return br[3]+'-'+br[2];
+    if (v.match(/^\d{4}-\d{2}/)) return v.substring(0,7);
+  }
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v-25569)*86400*1000));
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }
+  return null;
+}
+
+function getMes() {
+  return document.getElementById('mes-sel').value;
+}
+
+// ── ORIGIN MAPPING ──
+function mapMidia(origem) {
+  if (!origem) return 'Outros';
+  const o = origem.toLowerCase();
+  if (o.includes('google')) return 'Google';
+  if (o.includes('ig') || o.includes('instagram') || o.includes('facebook') || o.includes('fb') || o.includes('meta')) return 'Meta';
+  if (o.includes('lp') || o.includes('landing')) return 'Landing Page';
+  return 'Outros';
+}
+
+function campLabel(nome, tipo) {
+  if (!nome) return 'Outros';
+  const n = nome.toLowerCase();
+  if (tipo === 'Pesquisa' || n.includes('search')) return 'Search';
+  if (tipo === 'Performance Max' || n.includes('pmax')) return 'PMax';
+  if (n.includes('leads')) return 'Leads';
+  if (n.includes('alcance')) return 'Alcance';
+  if (n.includes('whatsapp')) return 'WhatsApp';
+  if (n.includes('lp') || n.includes('landing')) return 'LP';
+  return nome.replace(/TMP_|monks_facebook_cpc_/gi,'').substring(0,25);
+}
+
+// ── SUM ──
+function sum(rows, field) { return rows.reduce((a,r)=>a+(parseFloat(r[field])||0),0); }
+
+// ── FORMAT ──
+function fBRL(v) { if(!v&&v!==0) return '—'; if(v>=1000) return 'R$'+(v/1000).toFixed(1).replace('.',',')+' k'; return 'R$'+v.toFixed(0); }
+function fBRLfull(v) { if(!v&&v!==0) return '—'; return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fNum(v) { return(!v&&v!==0)?'—':Math.round(v).toLocaleString('pt-BR'); }
+function fPct(v) { return(!v&&v!==0)?'0%':(v*100).toFixed(1).replace('.',',')+' %'; }
+
+function kpiCard(label,value,sub,acc) {
+  return `<div class="kpi ${acc||'w'}"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-sub">${sub}</div></div>`;
+}
+
+// ── CPL MIDIA BLOCK ──
+function cplMidiaHTML(gInvest, mInvest, gLeads, mLeads) {
+  const cplG = gLeads>0 ? gInvest/gLeads : 0;
+  const cplM = mLeads>0 ? mInvest/mLeads : 0;
+  return `
+    <div class="cpl-block google">
+      <div class="cpl-midia-label"><div class="midia-icon g">G</div>Google Ads</div>
+      <div class="cpl-midia-value">${cplG>0?fBRL(cplG):'—'}</div>
+      <div class="cpl-midia-sub">Invest. ${fBRLfull(gInvest)} · ${gLeads>0?fNum(gLeads)+' leads CRM':'sem leads CRM'}</div>
+    </div>
+    <div class="cpl-block meta">
+      <div class="cpl-midia-label"><div class="midia-icon mt">f</div>Meta Ads</div>
+      <div class="cpl-midia-value">${cplM>0?fBRL(cplM):'—'}</div>
+      <div class="cpl-midia-sub">Invest. ${fBRLfull(mInvest)} · ${mLeads>0?fNum(mLeads)+' leads CRM':'sem leads CRM'}</div>
+    </div>`;
+}
+
+// ── BARS ──
+function renderBars(id, items, showPct) {
+  const el=document.getElementById(id); if(!el) return;
+  const max=Math.max(...items.map(i=>i.val),1);
+  const total=items.reduce((a,i)=>a+i.val,0);
+  el.innerHTML=items.map(it=>`
+    <div class="bar-item">
+      <div class="bar-top">
+        <span class="bar-name" title="${it.label}">${it.label}</span>
+        ${showPct&&total>0?`<span class="bar-pct">${((it.val/total)*100).toFixed(1)}%</span>`:''}
+        <span class="bar-val" style="color:${it.color||'#fff'}">${it.display}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max((it.val/max)*100,1)}%;background:${it.color||'#C5A44A'}"></div></div>
+    </div>`).join('');
+}
+
+// ── DONUT ──
+function renderDonut(svgId, legendId, items) {
+  const svg=document.getElementById(svgId), lg=document.getElementById(legendId);
+  if(!svg||!lg) return;
+  const total=items.reduce((a,i)=>a+i.val,0); if(!total) return;
+  const r=38,cx=50,cy=50,circ=2*Math.PI*r; let off=0,circles='';
+  items.forEach(it=>{ const d=(it.val/total)*circ; circles+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${it.color}" stroke-width="16" stroke-dasharray="${d} ${circ}" stroke-dashoffset="${-off}" transform="rotate(-90 ${cx} ${cy})"/>`; off+=d; });
+  const lbl=total>=1000?'R$'+(total/1000).toFixed(0)+'k':fBRL(total);
+  svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2A2A2A" stroke-width="16"/>${circles}
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" fill="#FFF" font-size="9" font-weight="bold" font-family="Montserrat">${lbl}</text>
+    <text x="${cx}" y="${cy+8}" text-anchor="middle" fill="#6B6B6B" font-size="6" font-family="Inter">total</text>`;
+  lg.innerHTML=items.map(it=>{ const p=total?((it.val/total)*100).toFixed(0):0; return `<div class="dl-item"><div class="dl-dot" style="background:${it.color}"></div>${it.label}<span class="dl-pct">${p}%</span></div>`; }).join('');
+}
+
+// ── LINE CHART (por mês) ──
+function renderLinha(svgId, legendId, series, meses) {
+  const svg=document.getElementById(svgId), lg=document.getElementById(legendId);
+  if(!svg||!lg||!meses.length) return;
+  const W=560,H=160,PL=50,PR=20,PT=15,PB=30,w=W-PL-PR,h=H-PT-PB;
+  const allV=series.flatMap(s=>s.vals); const maxV=Math.max(...allV,1);
+  const n=meses.length; const xStep=n>1?w/(n-1):w;
+  let grid='';
+  [0,0.25,0.5,0.75,1].forEach(f=>{ const y=PT+h*(1-f),v=maxV*f,lbl=v>=1000?(v/1000).toFixed(0)+'k':v.toFixed(0); grid+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#2A2A2A" stroke-width="1"/><text x="${PL-6}" y="${y+4}" fill="#6B6B6B" font-size="8" font-family="Inter" text-anchor="end">${lbl}</text>`; });
+  let xLbls=''; meses.forEach((m,i)=>{ const x=PL+i*xStep; xLbls+=`<text x="${x}" y="${H-4}" fill="${i===n-1?'#FFF':'#6B6B6B'}" font-size="8" font-family="Inter" text-anchor="middle">${fmtMesShort(m)}</text>`; });
+  let lines=''; series.forEach(s=>{ const pts=s.vals.map((v,i)=>`${PL+i*xStep},${PT+h*(1-(v/maxV))}`).join(' '); lines+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" ${s.dashed?'stroke-dasharray="5 3"':''}/>`;const lx=PL+(s.vals.length-1)*xStep,ly=PT+h*(1-(s.vals[s.vals.length-1]/maxV)); lines+=`<circle cx="${lx}" cy="${ly}" r="3.5" fill="${s.color}"/>`; });
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.innerHTML=grid+xLbls+lines;
+  lg.innerHTML=series.map(s=>`<div class="legend-item"><div class="legend-line" style="background:${s.color}"></div>${s.label}</div>`).join('');
+}
+
+function fmtMesShort(m) { if(!m) return ''; const [y,mo]=m.split('-'); return ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)]+' '+y.substring(2); }
+
+// ── BRAND DATA CALC ──
+function calcBrand(brand, mes) {
+  const g   = DATA['Google_'+brand]||[];
+  const mt  = DATA['Meta_'+brand]||[];
+  const crm = DATA['CRM_'+brand]||[];
+
+  const gf  = g.filter(r => parseMes(r['Mês'] || r['Data']) === mes);
+  const mf  = mt.filter(r => parseMes(r['Mês'] || r['Data']) === mes);
+  const cf  = crm.filter(r => parseMes(r['Mês']) === mes);
+
+  const gInvest = sum(gf,'Custo');
+  const mInvest = sum(mf,'Investimento (R$)');
+
+  // leads CRM por mídia (agrupando origens)
+  const crmByMidia = {Google:0, Meta:0, 'Landing Page':0, Outros:0};
+  const vendByMidia= {Google:0, Meta:0, 'Landing Page':0, Outros:0};
+  cf.forEach(r=>{ const mid=mapMidia(r['Origem']); crmByMidia[mid]=(crmByMidia[mid]||0)+(parseFloat(r['Leads'])||0); vendByMidia[mid]=(vendByMidia[mid]||0)+(parseFloat(r['Vendas'])||0); });
+
+  const totLeads  = Object.values(crmByMidia).reduce((a,v)=>a+v,0);
+  const totVendas = Object.values(vendByMidia).reduce((a,v)=>a+v,0);
+
+  // campanhas Google agrupadas por tipo
+  const gCamp = {};
+  gf.forEach(r=>{ const lbl=campLabel(r['Campanha'],r['Tipo de campanha']); gCamp[lbl]=(gCamp[lbl]||0)+(parseFloat(r['Custo'])||0); });
+
+  // campanhas Meta agrupadas
+  const mCamp = {};
+  mf.forEach(r=>{ const lbl=campLabel(r['Campanha'],r['Tipo de resultado']); mCamp[lbl]=(mCamp[lbl]||0)+(parseFloat(r['Investimento (R$)'])||0); });
+
+  return {
+    gInvest, mInvest, invest:gInvest+mInvest,
+    clicks: sum(gf,'Cliques'), impr: sum(gf,'Impr.'),
+    mLeads: sum(mf,'Leads (formulário)'),
+    leads: totLeads, vendas: totVendas,
+    gLeads: crmByMidia['Google']||0, mLeadscrm: crmByMidia['Meta']||0,
+    gVend: vendByMidia['Google']||0, mVend: vendByMidia['Meta']||0,
+    crmByMidia, vendByMidia, gCamp, mCamp,
+    crmRows: cf,
+  };
+}
+
+// ── RENDER GERAL ──
+function renderGeral(mes) {
+  const bd = {}; let totInvest=0,totLeads=0,totVendas=0,totClicks=0,totGI=0,totMI=0,totGL=0,totML=0;
+  BRANDS.forEach(b=>{ bd[b]=calcBrand(b,mes); totInvest+=bd[b].invest; totLeads+=bd[b].leads; totVendas+=bd[b].vendas; totClicks+=bd[b].clicks; totGI+=bd[b].gInvest; totMI+=bd[b].mInvest; totGL+=bd[b].gLeads; totML+=bd[b].mLeadscrm; });
+  const cpl=totLeads>0?totInvest/totLeads:0, cpv=totVendas>0?totInvest/totVendas:0;
+
+  document.getElementById('kpi-geral').innerHTML=[
+    kpiCard('Investimento Total',fBRL(totInvest),fBRLfull(totInvest),'w'),
+    kpiCard('Leads no CRM',fNum(totLeads),'Todas as marcas','w'),
+    kpiCard('CPL Médio',cpl>0?fBRL(cpl):'—','Invest. ÷ leads CRM','w'),
+    kpiCard('Vendas',fNum(totVendas),BRANDS.map(b=>`${Math.round(bd[b].vendas)} ${b}`).join(' · '),'w'),
+    kpiCard('Custo / Venda',cpv>0?fBRL(cpv):'—','Invest. ÷ vendas','w'),
+  ].join('');
+
+  // CPL por mídia consolidado
+  const cplG=totGL>0?totGI/totGL:0, cplM=totML>0?totMI/totML:0, cplTot=totLeads>0?totInvest/totLeads:0;
+  document.getElementById('cpl-midia-geral').innerHTML=`
+    <div class="cpl-block google">
+      <div class="cpl-midia-label"><div class="midia-icon g">G</div>Google Ads</div>
+      <div class="cpl-midia-value">${cplG>0?fBRL(cplG):'—'}</div>
+      <div class="cpl-midia-sub">Invest. ${fBRLfull(totGI)} · ${totGL>0?fNum(totGL)+' leads':'sem leads CRM'}</div>
+    </div>
+    <div class="cpl-block meta">
+      <div class="cpl-midia-label"><div class="midia-icon mt">f</div>Meta Ads</div>
+      <div class="cpl-midia-value">${cplM>0?fBRL(cplM):'—'}</div>
+      <div class="cpl-midia-sub">Invest. ${fBRLfull(totMI)} · ${totML>0?fNum(totML)+' leads':'sem leads CRM'}</div>
+    </div>
+    <div class="cpl-block" style="border-top:2px solid var(--white)">
+      <div class="cpl-midia-label">⊕ Total</div>
+      <div class="cpl-midia-value">${cplTot>0?fBRL(cplTot):'—'}</div>
+      <div class="cpl-midia-sub">Invest. ${fBRLfull(totInvest)} · ${fNum(totLeads)} leads</div>
+    </div>`;
+
+  renderBars('bars-midia',[
+    {label:'Google Ads',val:totGI,display:fBRLfull(totGI),color:'#4285F4'},
+    {label:'Meta Ads',  val:totMI,display:fBRLfull(totMI),color:'#1877F2'},
+  ]);
+  renderBars('bars-leads', BRANDS.map(b=>({label:b==='Mini'?'MINI':b,val:bd[b].leads,display:fNum(bd[b].leads),color:BC[b]})));
+  renderDonut('donut-marca','legend-donut', BRANDS.map(b=>({label:b==='Mini'?'MINI':b,val:bd[b].invest,color:BC[b]})));
+
+  // Linha por mês disponível
+  const allMeses = [...new Set(Object.values(DATA).flatMap(rows=>(rows||[]).map(r=>parseMes(r['Mês']||r['Data'])).filter(Boolean)))].sort();
+  const ultMeses = allMeses.slice(-6);
+  renderLinha('chart-linha','legend-linha', BRANDS.map(b=>({
+    label:b==='Mini'?'MINI':b, color:BC[b], dashed:b==='Mini',
+    vals: ultMeses.map(m=>{ return calcBrand(b,m).invest; })
+  })), ultMeses);
+
+  const tbody=document.querySelector('#tbl-consolidado tbody');
+  tbody.innerHTML=BRANDS.map(b=>{ const d=bd[b]; const cpl=d.leads>0?d.invest/d.leads:0,cpv=d.vendas>0?d.invest/d.vendas:0; const midias=[d.gInvest>0?'Google':'',d.mInvest>0?'Meta':''].filter(Boolean).join(' + ');
+    return `<tr><td><span class="brand-dot" style="background:${BC[b]}"></span>${b==='Mini'?'MINI':b}</td><td><span style="color:var(--mid);font-size:11px">${midias||'—'}</span></td><td class="num">${fBRLfull(d.invest)}</td><td class="num">${d.leads>0?fNum(d.leads):'—'}</td><td class="num">${cpl>0?fBRLfull(cpl):'—'}</td><td class="num">${fNum(d.vendas)}</td><td class="num">${cpv>0?fBRLfull(cpv):'—'}</td></tr>`;
+  }).join('')+`<tr class="total"><td colspan="2">Total</td><td class="num">${fBRLfull(totInvest)}</td><td class="num">${fNum(totLeads)}</td><td class="num">${cpl>0?fBRLfull(cpl):'—'}</td><td class="num">${fNum(totVendas)}</td><td class="num">${cpv>0?fBRLfull(cpv):'—'}</td></tr>`;
+
+  document.getElementById('loading-geral').style.display='none';
+  document.getElementById('content-geral').style.display='block';
+}
+
+// ── RENDER BRAND ──
+function renderBrand(brand, mes) {
+  const b=brand, acc=b==='BMW'?'b':b==='Mini'?'m':'d', id=b.toLowerCase();
+  const d=calcBrand(b,mes);
+  const cpl=d.leads>0?d.invest/d.leads:0, cpv=d.vendas>0?d.invest/d.vendas:0, ctr=d.impr>0?d.clicks/d.impr:0;
+
+  document.getElementById('kpi-'+id).innerHTML=[
+    kpiCard('Investimento Total',fBRL(d.invest),`Google ${fBRL(d.gInvest)} · Meta ${fBRL(d.mInvest)}`,acc),
+    kpiCard('Leads no CRM',d.leads>0?fNum(d.leads):'—','Clientes em atendimento',acc),
+    kpiCard('CPL',cpl>0?fBRL(cpl):'—','Invest. ÷ leads CRM',acc),
+    kpiCard('Vendas',fNum(d.vendas),'No período',acc),
+    kpiCard('Custo / Venda',cpv>0?fBRL(cpv):'—','Invest. ÷ vendas',acc),
+  ].join('');
+
+  // CPL por mídia
+  document.getElementById('cpl-midia-'+id).innerHTML=cplMidiaHTML(d.gInvest,d.mInvest,d.gLeads,d.mLeadscrm);
+
+  // Campanhas Google — Search em destaque
+  const gCampItems = Object.entries(d.gCamp).sort((a,z)=>z[1]-a[1]).map(([lbl,val])=>{
+    const isSearch = lbl==='Search';
+    return {label:lbl, val, display:fBRLfull(val), color: isSearch?'#4285F4':'#34A853'};
+  });
+  renderBars('bars-'+id+'-gcamp', gCampItems, true);
+
+  // Campanhas Meta
+  const mCampItems = Object.entries(d.mCamp).sort((a,z)=>z[1]-a[1]).map(([lbl,val])=>({label:lbl,val,display:fBRLfull(val),color:'#1877F2'}));
+  renderBars('bars-'+id+'-mcamp', mCampItems.length?mCampItems:[{label:'Sem dados',val:0,display:'—',color:'#444'}], true);
+
+  // CRM tabela com coluna mídia
+  const origMap={};
+  d.crmRows.forEach(r=>{ const o=r['Origem']||'Outros', mid=mapMidia(o); const k=o; origMap[k]=origMap[k]||{leads:0,vendas:0,midia:mid}; origMap[k].leads+=parseFloat(r['Leads'])||0; origMap[k].vendas+=parseFloat(r['Vendas'])||0; });
+  const sorted=Object.entries(origMap).sort((a,z)=>z[1].leads-a[1].leads);
+  const totL=sorted.reduce((a,[,v])=>a+v.leads,0), totV=sorted.reduce((a,[,v])=>a+v.vendas,0);
+  const midiaColor={Google:'#4285F4',Meta:'#1877F2','Landing Page':'#F5A623',Outros:'#6B6B6B'};
+  const tbody=document.querySelector(`#tbl-${id} tbody`);
+  tbody.innerHTML=sorted.map(([o,v])=>`<tr>
+    <td>${o}</td>
+    <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:${midiaColor[v.midia]||'#6B6B6B'}">${v.midia==='Google'?'<span style="background:#fff;color:#333;border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800">G</span>':'<span style="background:linear-gradient(135deg,#405DE6,#833AB4,#FD1D1D);border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:#fff">f</span>'}${v.midia}</span></td>
+    <td class="num">${fNum(v.leads)}</td>
+    <td class="num">${fNum(v.vendas)}</td>
+    <td class="num">${v.leads>0?fPct(v.vendas/v.leads):'—'}</td>
+  </tr>`).join('')+(totL>0||totV>0?`<tr class="total"><td>Total</td><td></td><td class="num">${fNum(totL)}</td><td class="num">${fNum(totV)}</td><td class="num">${totL>0?fPct(totV/totL):'—'}</td></tr>`:'');
+
+  document.getElementById('loading-'+id).style.display='none';
+  document.getElementById('content-'+id).style.display='block';
+}
+
+// ── APPLY FILTERS ──
+function applyFilters() {
+  if(!Object.keys(DATA).length) return;
+  const mes = getMes();
+  if (!mes) return;
+  const CLOSED = ['2026-03','2026-04','2026-05','2026-06'];
+  document.getElementById('partial-tag').style.display = CLOSED.includes(mes) ? 'none' : 'inline-block';
+  renderGeral(mes);
+  renderBrand('BMW', mes);
+  renderBrand('Mini', mes);
+  renderBrand('Denza', mes);
+}
+
+function showView(id,btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── INIT ──
+function buildMeses() {
+  const set = new Set();
+  Object.values(DATA).forEach(rows=>(rows||[]).forEach(r=>{
+    const m = parseMes(r['Mês'] || r['Data']);
+    if (m) set.add(m);
+  }));
+  return Array.from(set).sort().reverse();
+}
+
+function formatMes(m) {
+  if (!m) return '';
+  const [y,mo] = m.split('-');
+  return ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)]+' '+y;
+}
+
+async function loadAll() {
+  document.getElementById('lbar').style.width='20%';
+  const results=await Promise.all(SHEETS.map(s=>fetchSheet(s).then(d=>({name:s,data:d}))));
+  results.forEach(r=>{ DATA[r.name]=r.data; });
+  document.getElementById('lbar').style.width='80%';
+
+  const CLOSED = ['2026-03','2026-04','2026-05','2026-06'];
+  const meses = buildMeses();
+  const sel = document.getElementById('mes-sel');
+  sel.innerHTML = meses.map(m=>`<option value="${m}">${formatMes(m)}${!CLOSED.includes(m)?' (parcial)':''}</option>`).join('');
+
+  applyFilters();
+  setTimeout(()=>{ document.getElementById('lbar').style.width='0%'; },500);
+}
+
+loadAll();
+</script>
+</body>
+</html>
